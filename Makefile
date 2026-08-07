@@ -1,11 +1,8 @@
 install:
-	uv venv --python 3.10
-	uv add flake8 mypy fire tqdm
 	uv sync
 
 run:
-	@clear
-	@uv run -m src
+	uv run python -m src
 
 debug:
 	uv run -m pdb -m src
