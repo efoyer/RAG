@@ -23,5 +23,5 @@ class Retriever:
                     if chunk["text"] == txt_found:
                         tmp_l.append(chunk)
                         break
-                final_res.append(tmp_l)
+            final_res.append(tmp_l)
         return final_res[0] if is_str else final_res
