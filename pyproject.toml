@@ -12,8 +12,8 @@ dependencies = [
     "bm25>=0.3.11",
 ]
 
-[tool.uv]
-dev-dependencies = [
+[dependency-groups]
+dev = [
     "flake8",
     "mypy",
 ]
