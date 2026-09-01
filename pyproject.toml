@@ -10,6 +10,9 @@ dependencies = [
     "tqdm",
     "langchain-text-splitters",
     "bm25>=0.3.11",
+    "torch>=2.13.0",
+    "transformers>=5.16.1",
+    "accelerate>=1.14.0",
 ]
 
 [dependency-groups]

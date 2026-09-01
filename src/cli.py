@@ -54,7 +54,8 @@ class RAGCLI:
                 q_id = item.get("question_id", str(uuid.uuid4()))
                 gross_res = retriever.search(question_txt, safe_k)
                 to_msr = self._format_single_result(query=question_txt,
-                                                    res_bruts=gross_res, q_id=q_id)
+                                                    res_bruts=gross_res,
+                                                    q_id=q_id)
                 all_result.append(to_msr)
 
             final_res = StudentSearchResults(
