@@ -11,7 +11,6 @@ from data_models import StudentSearchResultsAndAnswer
 from ai import AiGenerator
 
 
-
 class RAGCLI:
     def index(self, max_chunk_size: int = 2000) -> None:
         indexer = Indexer(max_chunk_size=max_chunk_size)
@@ -96,6 +95,69 @@ class RAGCLI:
             k=safe_k
         )
         print(final_answer.model_dump_json(indent=4))
+
+    def answer_dataset(self, student_search_results_path: str,
+                       save_directory: str) -> None:
+        ssr_path = Path(student_search_results_path)
+        if not ssr_path.is_file():
+            print(f"{student_search_results_path} is not a file !")
+            sys.exit(1)
+            
+        folder_save = Path(save_directory)
+        content = ssr_path.read_text(encoding="utf-8")
+        search_data = StudentSearchResults.model_validate_json(content)
+
+        llm = AiGenerator()
+        lst_res = []
+        
+        # Initialisation du cache mémoire
+        file_cache: dict[str, str] = {}
+
+        for item in search_data.search_results:
+            question_txt = item.question
+
+            gross_res = []
+            for source in item.retrieved_sources:
+                file_path = Path(source.file_path)
+                if file_path.exists():
+                    path_str = str(file_path)
+                    
+                    # Vérification dans le cache avant lecture disque
+                    if path_str not in file_cache:
+                        file_cache[path_str] = file_path.read_text(
+                            encoding="utf-8", 
+                            errors="ignore"
+                        )
+                    
+                    full_text = file_cache[path_str]
+                    fragment = full_text[source.first_character_index:source.last_character_index]
+
+                    gross_res.append({
+                        "file_path": source.file_path,
+                        "text": fragment
+                    })
+                    
+            raw_answer = llm.generate(question_txt, gross_res)
+            to_ma = MinimalAnswer(
+                question_id=item.question_id,
+                question=question_txt,
+                retrieved_sources=item.retrieved_sources,
+                answer=raw_answer
+            )
+            lst_res.append(to_ma)
+            
+        final_answer = StudentSearchResultsAndAnswer(
+            search_results=lst_res,
+            k=search_data.k
+        )
+
+        folder_save.mkdir(parents=True, exist_ok=True)
+        path_save = folder_save / ssr_path.name
+
+        with open(path_save, "w", encoding="utf-8") as f:
+            f.write(final_answer.model_dump_json(indent=4))
+            
+        print(f"{path_save}")
 
     def _validate_k(self, k: Any):
         try:

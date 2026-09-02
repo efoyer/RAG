@@ -14,15 +14,20 @@ class AiGenerator:
 
     def generate(self, query: str, gross_res: List[Dict[str, Any]]) -> str:
         context = "\n\n".join(
-                                f"[Source {i+1}: {res['file_path']}]\n{res['text']}"
-                                for i, res in enumerate(gross_res)
-                            )
+            (
+                f"[Source {i + 1}: {res['file_path']}]\n"
+                f"{res['text']}"
+            )
+            for i, res in enumerate(gross_res)
+        )
         messages = [
             {
                 "role": "system",
                 "content": (
-                    "You are a technical assistant answering questions about the vLLM codebase. "
-                    "Answer ONLY using the provided context. If the context does not contain "
+                    "You are a technical assistant answering questions about"
+                    " the vLLM codebase. "
+                    "Answer ONLY using the provided context."
+                    "If the context does not contain "
                     "the answer, say so explicitly instead of guessing."
                 )
             },
