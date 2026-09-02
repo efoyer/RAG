@@ -8,7 +8,8 @@ import uuid
 from data_models import MinimalSource, MinimalSearchResults
 from data_models import StudentSearchResults, MinimalAnswer
 from data_models import StudentSearchResultsAndAnswer
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from ai import AiGenerator
+
 
 
 class RAGCLI:
@@ -82,43 +83,13 @@ class RAGCLI:
         gross_res = retriever.search(query, safe_k)
 
         to_msr = self._format_single_result(query=query, res_bruts=gross_res)
-        tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen3-0.6B")
-        model = AutoModelForCausalLM.from_pretrained(
-            "Qwen/Qwen3-0.6B",
-            device_map="cpu"
-        )
-        context = "\n---\n".join(res["text"] for res in gross_res)
-        messages = [
-            {
-                "role": "system",
-                "content": (
-                    "You are a precise and expert assistant specialized in vLLM."
-                    "Answer the user's question directly and concisely based ONLY on the provided context."
-                )
-            },
-            {
-                "role": "user",
-                "content": f"Context:\n{context}\n\nQuestion: {query}"
-            }
-        ]
 
-        prompt = tokenizer.apply_chat_template(
-            messages,
-            tokenize=False,
-            add_generation_prompt=True,
-            enable_thinking=False
-        )
-
-        inputs = tokenizer(prompt, return_tensors="pt").to("cpu")
-        outputs = model.generate(**inputs, max_new_tokens=128,
-                                 temperature=0.6)
-
-        tmp_res = outputs[0][inputs.input_ids.shape[-1]:]
-        answer_txt = tokenizer.decode(tmp_res, skip_special_tokens=True)
+        llm = AiGenerator()
+        final_answer = llm.generate(query, gross_res)
 
         to_ma = MinimalAnswer(
             **to_msr.model_dump(),
-            answer=answer_txt.strip()
+            answer=final_answer
         )
         final_answer = StudentSearchResultsAndAnswer(
             search_results=[to_ma],
