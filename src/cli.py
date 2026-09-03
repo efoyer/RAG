@@ -13,7 +13,7 @@ from ai import AiGenerator
 
 
 class RAGCLI:
-    def index(self, max_chunk_size: int = 2000) -> None:
+    def index(self, max_chunk_size: int = 800) -> None:
         indexer = Indexer(max_chunk_size=max_chunk_size)
         indexer.build_index()
 
@@ -22,7 +22,7 @@ class RAGCLI:
             print("Error: Empty request")
             sys.exit(1)
         safe_k = self._validate_k(k)
-        indexer = Indexer(max_chunk_size=2000)
+        indexer = Indexer(max_chunk_size=800)
         corpus = indexer.build_index()
         retriever = Retriever(chunks=corpus)
         gross_res = retriever.search(query, safe_k)
@@ -42,7 +42,7 @@ class RAGCLI:
         folder_save = Path(save_directory)
         path_save = folder_save / data_name
         safe_k = self._validate_k(k)
-        indexer = Indexer(max_chunk_size=2000)
+        indexer = Indexer(max_chunk_size=1000)
         corpus = indexer.build_index()
         retriever = Retriever(chunks=corpus)
 
@@ -77,7 +77,7 @@ class RAGCLI:
             print("Error: Empty request")
             sys.exit(1)
         safe_k = self._validate_k(k)
-        indexer = Indexer(max_chunk_size=2000)
+        indexer = Indexer(max_chunk_size=800)
         corpus = indexer.build_index()
         retriever = Retriever(chunks=corpus)
         gross_res = retriever.search(query, safe_k)
@@ -116,7 +116,7 @@ class RAGCLI:
         lst_res = []
 
         file_cache: dict[str, str] = {}
-        for file in tqdm(search_data.search_results, desc="Loading..."):
+        for _ in tqdm(search_data.search_results, desc="Loading..."):
             for item in search_data.search_results:
                 question_txt = item.question
 
@@ -128,7 +128,7 @@ class RAGCLI:
 
                         if path_str not in file_cache:
                             file_cache[path_str] = file_path.read_text(
-                                encoding="utf-8", 
+                                encoding="utf-8",
                                 errors="ignore"
                             )
 

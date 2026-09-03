@@ -2,11 +2,12 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter, Language
 
 
 class Chunker:
-    def __init__(self, max_chunk_size: int = 2000):
+    def __init__(self, max_chunk_size: int = 800):
         calcul_overlap = int(min(200, max_chunk_size // 10))
         splitter_kwargs = {
             "chunk_size": max_chunk_size,
-            "chunk_overlap": calcul_overlap
+            "chunk_overlap": calcul_overlap,
+            "add_start_index": True
         }
         self.md_splitter = RecursiveCharacterTextSplitter.from_language(
            language=Language.MARKDOWN,
@@ -25,24 +26,21 @@ class Chunker:
 
     def chunk_files(self, content: str, files_path: str):
         if files_path.endswith(".py"):
-            txt_chunk = self.py_splitter.split_text(content)
+            docs = self.py_splitter.create_documents([content])
         elif files_path.endswith((".md")):
-            txt_chunk = self.md_splitter.split_text(content)
+            docs = self.md_splitter.create_documents([content])
         elif files_path.endswith((".txt")):
-            txt_chunk = self.txt_splitter.split_text(content)
+            docs = self.txt_splitter.create_documents([content])
         else:
             return []
 
         stored_chunk = []
-        current_search_index = 0
 
-        for chunk_txt in txt_chunk:
-            start_index = content.find(chunk_txt, current_search_index)
-            if start_index == -1:
-                start_index = content.find(chunk_txt)
+        for doc in docs:
+            chunk_txt = str(doc.page_content)
+            start_index = int(doc.metadata.get("start_index", -1))
             if start_index != -1:
                 end_index = start_index + len(chunk_txt)
-                current_search_index = start_index + 1
                 stored_chunk.append({
                     "file_path": files_path,
                     "text": chunk_txt,
