@@ -38,6 +38,8 @@ class Chunker:
 
         for chunk_txt in txt_chunk:
             start_index = content.find(chunk_txt, current_search_index)
+            if start_index == -1:
+                start_index = content.find(chunk_txt)
             if start_index != -1:
                 end_index = start_index + len(chunk_txt)
                 current_search_index = start_index + 1
