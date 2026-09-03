@@ -3,3 +3,5 @@ data/output/
 data/processed/
 __pycache__/
 .venv/
+data/datasets/**/*private*
+moulinette-ubuntu
