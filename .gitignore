@@ -2,6 +2,6 @@ data/raw/
 data/output/
 data/processed/
 __pycache__/
-.venv/
+.venv
 data/datasets/**/*private*
 moulinette-ubuntu
