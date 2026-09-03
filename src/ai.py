@@ -1,14 +1,16 @@
 import torch
+import gc
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from typing import List, Dict, Any
 
 
 class AiGenerator:
     def __init__(self, model_id: str = "Qwen/Qwen3-0.6B") -> None:
+        self.device: str = "cuda" if torch.cuda.is_available() else "cpu"
         self.tokenizer = AutoTokenizer.from_pretrained(model_id)
         self.model = AutoModelForCausalLM.from_pretrained(
             model_id,
-            device_map="cpu"
+            device_map=self.device
         )
         self.model.eval()
 
@@ -42,17 +44,34 @@ class AiGenerator:
             add_generation_prompt=True,
             enable_thinking=False
         )
+        inputs = (
+            self.tokenizer(prompt, return_tensors="pt")
+        )
+        try:
+            inputs_gpu = inputs.to(self.device)
+            with torch.no_grad():
+                outputs = self.model.generate(
+                    **inputs_gpu,
+                    max_new_tokens=200,
+                    do_sample=False,
+                    repetition_penalty=1.15,
+                    pad_token_id=self.tokenizer.eos_token_id
+                )
+        except torch.cuda.OutOfMemoryError:
+            print("WARNING : Insufficient VRAM. Switching to CPU.")
+            torch.cuda.empty_cache()
+            gc.collect()
 
-        inputs = self.tokenizer(prompt, return_tensors="pt").to("cpu")
-
-        with torch.no_grad():
-            outputs = self.model.generate(
-                **inputs,
-                max_new_tokens=200,
-                do_sample=False,
-                repetition_penalty=1.15,
-                pad_token_id=self.tokenizer.eos_token_id
-            )
+            self.model.to("cpu")
+            with torch.no_grad():
+                outputs = self.model.generate(
+                    **inputs,
+                    max_new_tokens=200,
+                    do_sample=False,
+                    repetition_penalty=1.15,
+                    pad_token_id=self.tokenizer.eos_token_id
+                )
+            self.model.to(self.device)
 
         tmp_res = outputs[0][inputs.input_ids.shape[-1]:]
         raw_answer = str(self.tokenizer.decode(tmp_res,
