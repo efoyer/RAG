@@ -1,8 +1,6 @@
 import fire
 import sys
-from pathlib import Path
-sys.path.insert(0, str(Path(__file__).parent))
-from cli import RAGCLI
+from .cli import RAGCLI
 
 
 if __name__ == "__main__":

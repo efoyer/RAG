@@ -2,14 +2,14 @@ import sys
 import json
 from pathlib import Path
 from typing import Any
-from indexer import Indexer
-from retriever import Retriever
+from .indexer import Indexer
+from .retriever import Retriever
 from tqdm import tqdm
 import uuid
-from data_models import MinimalSource, MinimalSearchResults
-from data_models import StudentSearchResults, MinimalAnswer
-from data_models import StudentSearchResultsAndAnswer
-from ai import AiGenerator
+from .data_models import MinimalSource, MinimalSearchResults
+from .data_models import StudentSearchResults, MinimalAnswer
+from .data_models import StudentSearchResultsAndAnswer
+from .ai import AiGenerator
 
 
 class RAGCLI:
@@ -52,7 +52,7 @@ class RAGCLI:
 
             question_list = json_file.get("rag_questions", [])
             all_result = []
-            for item in question_list:
+            for item in tqdm(question_list, desc="Searching dataset..."):
                 question_txt = item.get("question")
                 q_id = item.get("question_id", str(uuid.uuid4()))
                 gross_res = retriever.search(question_txt, safe_k)
@@ -116,32 +116,33 @@ class RAGCLI:
         lst_res = []
 
         file_cache: dict[str, str] = {}
-        for _ in tqdm(search_data.search_results, desc="Loading..."):
-            for item in search_data.search_results:
-                question_txt = item.question
 
-                gross_res = []
-                for source in item.retrieved_sources:
-                    file_path = Path(source.file_path)
-                    if file_path.exists():
-                        path_str = str(file_path)
+        for item in tqdm(search_data.search_results,
+                         desc="Generating answers..."):
+            question_txt = item.question
 
-                        if path_str not in file_cache:
-                            file_cache[path_str] = file_path.read_text(
-                                encoding="utf-8",
-                                errors="ignore"
-                            )
+            gross_res = []
+            for source in item.retrieved_sources:
+                file_path = Path(source.file_path)
+                if file_path.exists():
+                    path_str = str(file_path)
 
-                        full_text = file_cache[path_str]
-                        fragment = full_text[
-                            source.first_character_index:
-                            source.last_character_index
-                        ]
+                    if path_str not in file_cache:
+                        file_cache[path_str] = file_path.read_text(
+                            encoding="utf-8",
+                            errors="ignore"
+                        )
 
-                        gross_res.append({
-                            "file_path": source.file_path,
-                            "text": fragment
-                        })
+                    full_text = file_cache[path_str]
+                    fragment = full_text[
+                        source.first_character_index:
+                        source.last_character_index
+                    ]
+
+                    gross_res.append({
+                        "file_path": source.file_path,
+                        "text": fragment
+                    })
 
             raw_answer = llm.generate(question_txt, gross_res)
             to_ma = MinimalAnswer(

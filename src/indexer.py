@@ -1,5 +1,5 @@
 from pathlib import Path
-from chunk import Chunker
+from .chunk import Chunker
 from tqdm import tqdm
 import json
 
@@ -17,7 +17,6 @@ class Indexer:
             print("Warning : No files found !")
             return []
         if self.save_path.exists():
-            print("loadddddd...........")
             with open(self.save_path, "r") as f:
                 return json.load(f)
 
