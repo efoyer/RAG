@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Any
 from .indexer import Indexer
 from .retriever import Retriever
+from .evaluation import evaluate
 from tqdm import tqdm
 import uuid
 from .data_models import MinimalSource, MinimalSearchResults
@@ -165,6 +166,10 @@ class RAGCLI:
             f.write(final_answer.model_dump_json(indent=4))
 
         print(f"{path_save}")
+
+    def evaluate(self, student_search_results_path: str, dataset_path: str):
+        evaluate(results_path=student_search_results_path,
+                 dataset_path=dataset_path)
 
     def _validate_k(self, k: Any) -> int:
         try:
