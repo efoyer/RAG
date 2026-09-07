@@ -1,3 +1,5 @@
+"""Main entry point for the CLI application."""
+
 import fire
 import sys
 from .cli import RAGCLI

@@ -1,3 +1,5 @@
+"""Module for evaluating the RAG pipeline performance (Recall and MRR)."""
+
 from pathlib import Path
 from typing import Dict, List, Tuple
 from pydantic import ValidationError
@@ -12,6 +14,15 @@ from .data_models import (
 
 
 def get_iou(chunk_a: MinimalSource, chunk_b: MinimalSource) -> float:
+    """Calculates the Intersection over Union (IoU) between two text chunks.
+
+    Args:
+        chunk_a (MinimalSource): The first text segment.
+        chunk_b (MinimalSource): The second text segment.
+
+    Returns:
+        float: The overlap ratio (between 0.0 and 1.0).
+    """
     if chunk_a.file_path != chunk_b.file_path:
         return 0.0
 
@@ -35,6 +46,15 @@ def get_iou(chunk_a: MinimalSource, chunk_b: MinimalSource) -> float:
 
 def score_query(predictions: List[MinimalSource],
                 truths: List[MinimalSource]) -> Tuple[float, float]:
+    """Evaluates a single query by calculating its Recall and MRR.
+
+    Args:
+        predictions (List[MinimalSource]): The sources found by the model.
+        truths (List[MinimalSource]): The reference sources (Ground Truth).
+
+    Returns:
+        Tuple[float, float]: A tuple containing (Recall, MRR).
+    """
     if not truths:
         return 0.0, 0.0
 
@@ -56,17 +76,35 @@ def score_query(predictions: List[MinimalSource],
 def load_student_data(filepath: Path
                       ) -> (StudentSearchResultsAndAnswer |
                             StudentSearchResults | None):
+    """Loads and validates the student results JSON file via Pydantic.
+
+    Args:
+        filepath (Path): Path to the results JSON file.
+
+    Returns:
+        The validated data as a Pydantic object, or None in case of an error.
+    """
     content = filepath.read_text(encoding="utf-8")
     try:
-        return StudentSearchResultsAndAnswer.model_validate_json(content)
+        ans_data = StudentSearchResultsAndAnswer.model_validate_json(content)
+        assert isinstance(ans_data, StudentSearchResultsAndAnswer)
+        return ans_data
     except ValidationError:
         try:
-            return StudentSearchResults.model_validate_json(content)
+            search_data = StudentSearchResults.model_validate_json(content)
+            assert isinstance(search_data, StudentSearchResults)
+            return search_data
         except ValidationError:
             return None
 
 
 def evaluate(results_path: str, dataset_path: str) -> None:
+    """CLI command to mathematically evaluate the RAG pipeline outputs.
+
+    Args:
+        results_path (str): Path to the generated JSON results.
+        dataset_path (str): Path to the Ground Truth JSON dataset.
+    """
     max_len = 2000
     ans_file = Path(results_path)
     ref_file = Path(dataset_path)
