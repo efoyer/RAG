@@ -4,6 +4,9 @@ import gc
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from typing import List, Dict, Any
+import os
+
+os.environ["HF_HUB_DISABLE_WARNINGS"] = "1"
 
 
 class AiGenerator:
@@ -88,9 +91,10 @@ class AiGenerator:
             gc.collect()
 
             self.model.to("cpu")
+            inputs_cpu = inputs.to("cpu")
             with torch.no_grad():
                 outputs = self.model.generate(
-                    **inputs,
+                    **inputs_cpu,
                     max_new_tokens=200,
                     do_sample=False,
                     repetition_penalty=1.15,
