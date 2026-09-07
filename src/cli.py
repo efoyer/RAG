@@ -14,7 +14,7 @@ from .ai import AiGenerator
 
 
 class RAGCLI:
-    def index(self, max_chunk_size: int = 800) -> None:
+    def index(self, max_chunk_size: int = 2000) -> None:
         indexer = Indexer(max_chunk_size=max_chunk_size)
         indexer.build_index()
 
@@ -23,7 +23,7 @@ class RAGCLI:
             print("Error: Empty request")
             sys.exit(1)
         safe_k = self._validate_k(k)
-        indexer = Indexer(max_chunk_size=800)
+        indexer = Indexer(max_chunk_size=2000)
         corpus = indexer.build_index()
         retriever = Retriever(chunks=corpus)
         gross_res = retriever.search(query, safe_k)
@@ -43,7 +43,7 @@ class RAGCLI:
         folder_save = Path(save_directory)
         path_save = folder_save / data_name
         safe_k = self._validate_k(k)
-        indexer = Indexer(max_chunk_size=1000)
+        indexer = Indexer(max_chunk_size=2000)
         corpus = indexer.build_index()
         retriever = Retriever(chunks=corpus)
 
@@ -78,7 +78,7 @@ class RAGCLI:
             print("Error: Empty request")
             sys.exit(1)
         safe_k = self._validate_k(k)
-        indexer = Indexer(max_chunk_size=800)
+        indexer = Indexer(max_chunk_size=2000)
         corpus = indexer.build_index()
         retriever = Retriever(chunks=corpus)
         gross_res = retriever.search(query, safe_k)

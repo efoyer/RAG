@@ -10,7 +10,7 @@ class Indexer:
         self.raw_dir = Path(raw_dir)
         self.chunker = Chunker(max_chunk_size)
         self.all_chunks = []
-        self.save_path = Path("data/processed/corpus.json")
+        self.save_path = Path(f"data/processed/corpus_{max_chunk_size}_.json")
 
     def build_index(self) -> list[dict]:
         if not self.raw_dir.exists():
