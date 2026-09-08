@@ -1,3 +1,4 @@
+
 *This project has been created as part of the 42 curriculum by efoyer.*
 
 # RAG against the machine
@@ -87,21 +88,39 @@ All input/output paths are CLI arguments and are never hard-coded.
 
 The pipeline is split into independent modules, each responsible for one stage:
 
-```
-data/raw/ ──► Indexer ──► Chunker ──► data/processed/ (corpus JSON)
-                                            │
-                                            ▼
-                                        Retriever (BM25)
-                                            │
-                              top-k MinimalSource results
-                                            │
-                        ┌───────────────────┴───────────────────┐
-                        ▼                                       ▼
-              StudentSearchResults (JSON)              AiGenerator (Qwen3-0.6B)
-                        │                                       │
-                        ▼                                       ▼
-                    evaluation.py                 StudentSearchResultsAndAnswer (JSON)
-                (recall@k, MRR, IoU)
+```mermaid
+
+flowchart TD
+    rawData["data/raw/"]
+    indexer["Indexer"]
+    chunker["Chunker"]
+    processedData["data/processed/<br/>corpus JSON"]
+    retriever["Retriever<br/>BM25"]
+    topK["top-k MinimalSource<br/>results"]
+    studentResults["StudentSearchResults<br/>JSON"]
+    aiGenerator["AiGenerator<br/>Qwen3-0.6B"]
+    finalResults["StudentSearchResultsAndAnswer<br/>JSON"]
+    evaluation["evaluation.py<br/>recall@k, MRR, IoU"]
+
+    rawData --> indexer
+    indexer --> chunker
+    chunker --> processedData
+    processedData --> retriever
+    retriever --> topK
+    topK --> studentResults
+    topK --> aiGenerator
+    studentResults --> evaluation
+    aiGenerator --> finalResults
+
+    classDef input stroke:#4ade80,fill:#f0fdf4
+    classDef process stroke:#38bdf8,fill:#f0f9ff
+    classDef output stroke:#a78bfa,fill:#f5f3ff
+    classDef evaluation stroke:#fb923c,fill:#fff7ed
+
+    class rawData input
+    class indexer,chunker,retriever,aiGenerator process
+    class processedData,topK,studentResults,finalResults output
+    class evaluation evaluation
 ```
 
 - **`indexer.py`** — walks `data/raw/`, reads every `.py`, `.md` and `.txt` file, sends
