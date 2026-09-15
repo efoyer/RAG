@@ -8,10 +8,10 @@ install:
 	uv sync
 
 run:
-	uv run python -m src
+	uv run python -m src $(ARGS)
 
 debug:
-	uv run -m pdb -m src
+	uv run -m pdb -m src $(ARGS)
 
 clean:
 	rm -rf __pycache__ .mypy_cache *.pyc src/__pycache__

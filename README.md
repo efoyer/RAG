@@ -78,7 +78,7 @@ uv run python -m src answer_dataset \
 
 # 6. Evaluate retrieval quality against a ground-truth dataset
 uv run python -m src evaluate \
-  --student_search_results_path data/output/search_results/AnsweredQuestions/dataset_docs_public.json \
+  --student_search_results_path data/output/search_results/UnansweredQuestions/dataset_docs_public.json \
   --dataset_path data/datasets/AnsweredQuestions/dataset_docs_public.json
 ```
 
